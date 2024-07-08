@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画像アップロード</title>
+</head>
+<body>
+    <h1>画像をアップロードしてください</h1>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <form action="{% url 'upload_image' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="image" required>
+        <button type="submit">アップロード</button>
+    </form>
+</body>
+</html>

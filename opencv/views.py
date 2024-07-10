@@ -8,6 +8,9 @@ def index(request):
 def upload_image(request):
     if request.method == 'POST' and request.FILES['image']:
         image = request.FILES['image']
+        if image.content_type not in ['image/jpeg', 'image/png']:
+            return render(request, 'index.html', {'error': 'Unsupported file format. Please upload a JPEG or PNG image.'})
+
         fs = FileSystemStorage()
         filename = fs.save(image.name, image)
         uploaded_file_path = fs.path(filename)

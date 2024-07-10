@@ -25,38 +25,40 @@ def preprocess_image(image_path):
         # 画像をグレースケールに変換
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
+        # ガウシアンブラーを適用してノイズを除去
+        gray = cv2.GaussianBlur(gray, (5, 5), 0)
+
+        # コントラストと明るさの調整
+        gray = cv2.convertScaleAbs(gray, alpha=2.0, beta=50)
+
         # デバッグ: グレースケール画像を保存
         temp_gray_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
         cv2.imwrite(temp_gray_file.name, gray)
         print(f"Grayscale image saved to: {temp_gray_file.name}")
 
-        # 明るさとコントラストの調整
-        gray = cv2.convertScaleAbs(gray, alpha=1.5, beta=0)
+        # 適応的な二値化を適用
+        binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                       cv2.THRESH_BINARY_INV, 11, 2)
 
-        # ノイズ除去
-        gray = cv2.medianBlur(gray, 5)
+        # モルフォロジー変換を適用して文字を強調
+        kernel = np.ones((3, 3), np.uint8)
+        morphed = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
 
-        # 二値化
-        _, binary = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+        # シャープ化フィルターを適用
+        sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+        sharpened = cv2.filter2D(morphed, -1, sharpen_kernel)
 
-        # デバッグ: 二値化画像を保存
-        temp_binary_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
-        cv2.imwrite(temp_binary_file.name, binary)
-        print(f"Preprocessed (binary) image saved to: {temp_binary_file.name}")
+        # デバッグ: 最終処理画像を保存
+        temp_final_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+        cv2.imwrite(temp_final_file.name, sharpened)
+        print(f"Final preprocessed image saved to: {temp_final_file.name}")
 
-        # グレースケール画像を表示
-        gray_img = cv2.imread(temp_gray_file.name, cv2.IMREAD_GRAYSCALE)
-        plt.imshow(gray_img, cmap='gray')
-        plt.title('Grayscale Image')
+        # 処理結果の表示
+        plt.imshow(sharpened, cmap='gray')
+        plt.title('Final Preprocessed Image')
         plt.show()
 
-        # 二値化画像を表示
-        binary_img = cv2.imread(temp_binary_file.name, cv2.IMREAD_GRAYSCALE)
-        plt.imshow(binary_img, cmap='gray')
-        plt.title('Binary Image')
-        plt.show()
-
-        return temp_binary_file.name
+        return temp_final_file.name
 
     except Exception as e:
         print(f"Exception in preprocess_image: {e}")
@@ -76,7 +78,7 @@ def extract_text_from_image(image_path):
             raise RuntimeError("No OCR tool found. Please install Tesseract-OCR.")
 
         tool = tools[0]  # 最初のツールを選択
-        lang = 'jpn'
+        lang = 'eng+jpn'  # 日本語と英数字を指定
 
         # 一時ファイルとして保存された画像をPIL画像に変換
         pil_img = Image.open(temp_image_path)

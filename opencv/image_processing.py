@@ -5,6 +5,7 @@ from PIL import Image
 import tempfile
 import matplotlib.pyplot as plt
 
+
 # Tesseractの実行ファイルのパスを設定
 tesseract_cmd = r'C:\2170114\djangoProject\tesseract\tesseract.exe'
 pytesseract.pytesseract.tesseract_cmd = tesseract_cmd

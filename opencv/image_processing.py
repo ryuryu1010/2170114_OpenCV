@@ -6,7 +6,7 @@ import tempfile
 import matplotlib.pyplot as plt
 
 # Tesseractの実行ファイルのパスを設定
-tesseract_cmd = r'C:\2170114\djangoProject\tesseract\tesseract.exe'
+tesseract_cmd = r'tesseract\tesseract.exe'
 pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
 
 def preprocess_image(image_path):
